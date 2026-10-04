@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         HHLott - สรุปเลขปิด
 // @namespace    https://github.com/6icsix-ux/HH_Auto_CloseNumber
-// @version      1.0.1
+// @version      1.0.2
 // @description  สรุปรายการเลขปิดแยกตามประเภท แสดงใน Modal แจ้งเตือนสีแดงอัตโนมัติ
 // @author       6icsix-ux
 // @match        https://hhlott.live/*
 // @match        https://*.hhlott.live/*
 // @run-at       document-idle
 // @grant        none
+// @require      https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js
 // @updateURL    https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js
 // @downloadURL  https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js
 // ==/UserScript==
@@ -97,6 +98,71 @@
     return el;
   };
 
+  // ---------- ปุ่มคัดลอกภาพหน้าต่าง (แคปเฉพาะ Modal) ----------
+  const COPY_BTN_CLASS = 'ext-copy-btn';
+  const COPY_LABEL = '📋 คัดลอกภาพหน้าต่างนี้';
+
+  function getCaptureTarget() {
+    const found = findAlertModal();
+    if (!found) return null;
+    return found.root.closest('.v-overlay__content') || found.root;
+  }
+
+  function downloadBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `closed-number-${Date.now()}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
+  async function copyModalImage(btn) {
+    const setLabel = (t) => { btn.textContent = t; };
+    const reset = () => setTimeout(() => { setLabel(COPY_LABEL); btn.disabled = false; }, 2500);
+
+    if (typeof html2canvas === 'undefined') {
+      setLabel('❌ โหลดไลบรารีแคปภาพไม่สำเร็จ');
+      return reset();
+    }
+    const target = getCaptureTarget();
+    if (!target) return;
+
+    btn.disabled = true;
+    setLabel('⏳ กำลังสร้างภาพ...');
+
+    // ส่ง Promise ให้ ClipboardItem เพื่อให้ยังนับเป็นการกดของผู้ใช้ (Chrome อนุญาต)
+    const blobPromise = html2canvas(target, {
+      backgroundColor: null,
+      scale: Math.max(2, window.devicePixelRatio || 1),
+      useCORS: true,
+      logging: false,
+      ignoreElements: (el) => el.classList && el.classList.contains(COPY_BTN_CLASS),
+    }).then(
+      (canvas) =>
+        new Promise((resolve, reject) =>
+          canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png')
+        )
+    );
+
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blobPromise })]);
+      setLabel('✅ คัดลอกแล้ว กด Ctrl+V เพื่อวางได้เลย');
+    } catch (err) {
+      console.error(LOG, 'คัดลอกลงคลิปบอร์ดไม่สำเร็จ', err);
+      try {
+        downloadBlob(await blobPromise);
+        setLabel('💾 คัดลอกไม่ได้ จึงบันทึกเป็นไฟล์แทน');
+      } catch (err2) {
+        console.error(LOG, err2);
+        setLabel('❌ สร้างภาพไม่สำเร็จ');
+      }
+    }
+    reset();
+  }
+
   function buildBox({ groups, totalCount }) {
     const box = css(document.createElement('div'), {
       background: '#ffffff',
@@ -153,6 +219,29 @@
 
       box.append(label, row);
     });
+
+    const copyBtn = css(document.createElement('button'), {
+      display: 'block',
+      margin: '14px auto 2px',
+      background: '#dc3545',
+      color: '#ffffff',
+      border: 'none',
+      'border-radius': '8px',
+      padding: '8px 18px',
+      'font-family': "'Prompt', sans-serif",
+      'font-size': '14px',
+      'font-weight': '600',
+      cursor: 'pointer',
+    });
+    copyBtn.type = 'button';
+    copyBtn.className = COPY_BTN_CLASS;
+    copyBtn.textContent = COPY_LABEL;
+    copyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      copyModalImage(copyBtn);
+    });
+    box.appendChild(copyBtn);
 
     return box;
   }
