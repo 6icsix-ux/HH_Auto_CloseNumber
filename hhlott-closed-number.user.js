@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HHLott - สรุปเลขปิด
 // @namespace    https://github.com/6icsix-ux/HH_Auto_CloseNumber
-// @version      1.2.1
+// @version      1.2.2
 // @description  สรุปเลขปิดแยกตามประเภทใน Modal แจ้งเตือน + สรุปยอดถูกรางวัล (@ชื่อ ++ยอด) พร้อมปุ่มคัดลอกภาพ/ข้อความ
 // @author       6icsix-ux
 // @match        https://hhlott.live/*
@@ -382,7 +382,7 @@
 
   // บรรทัดข้อความ: ชื่อว่างจะเว้นช่องว่างไว้ให้กรอก  เช่น "@ ++475"
   const lineOf = (w) => `${w.name || '@'} ++${fmt(w.total)}`;
-  const textOf = (g) => `${g.type}\n` + g.list.map(lineOf).join('\n');
+  const textOf = (g) => `รายการผู้ถูกรางวัล ${g.type}\n` + g.list.map(lineOf).join('\n');
 
   // ---------- UI ----------
   const css = (el, styles) => {
