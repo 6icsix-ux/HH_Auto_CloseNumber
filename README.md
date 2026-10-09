@@ -1,9 +1,9 @@
 ## 📋 ขั้นตอนการติดตั้ง
 
-> ทำครั้งเดียวต่อเครื่อง ใช้ Google Chrome ปกติ
+> ทำครั้งเดียวต่อเครื่อง ใช้ Browser ปกติ
 
 ### 1️⃣ ดาวน์โหลดและติดตั้ง Tampermonkey
-👉 [คลิกที่นี่เพื่อเปิด Chrome Web Store](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?pli=1)
+👉 [คลิกที่นี่เพื่อเปิด Browser Web Store](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?pli=1)
 
 <img width="1096" height="209" alt="image" src="https://github.com/user-attachments/assets/f616a16e-f3a1-451f-91db-4efe4efd53ca" />
 
