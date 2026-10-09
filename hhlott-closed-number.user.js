@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         HHLott - สรุปเลขปิด
 // @namespace    https://github.com/6icsix-ux/HH_Auto_CloseNumber
-// @version      1.0.2
-// @description  สรุปรายการเลขปิดแยกตามประเภท แสดงใน Modal แจ้งเตือนสีแดงอัตโนมัติ
+// @version      1.2.1
+// @description  สรุปเลขปิดแยกตามประเภทใน Modal แจ้งเตือน + สรุปยอดถูกรางวัล (@ชื่อ ++ยอด) พร้อมปุ่มคัดลอกภาพ/ข้อความ
 // @author       6icsix-ux
 // @match        https://hhlott.live/*
 // @match        https://*.hhlott.live/*
@@ -318,4 +318,211 @@
 
   console.log(LOG, 'โหลดแล้ว');
   schedule();
+})();
+
+// =====================================================================
+// ฟีเจอร์เพิ่ม: ปุ่ม "สรุปยอด" (ลอยมุมขวาล่าง) -> เลือกประเภท -> คัดลอก @ชื่อ ++ยอดถูก
+// =====================================================================
+(() => {
+  'use strict';
+
+  const LOG = '[HHLott สรุปยอดถูก]';
+  const ROOT_ID = 'ext-win-fab-root';
+  const strip = (s) => (s || '').replace(/[\s ​-‍﻿]+/g, ' ').trim();
+  const toNum = (s) => parseFloat(String(s || '').replace(/,/g, '').replace(/[^\d.\-]/g, '')) || 0;
+  const fmt = (n) => String(Math.round(n * 100) / 100);
+
+  // ---------- ดึงผู้ถูกจาก tr.billWin แยกตามประเภท (ชนิดหวย) ----------
+  // ชื่อเดียวกันในประเภทเดียวกันรวมยอดเป็นบรรทัดเดียว
+  // แถวที่ไม่ได้บันทึกชื่อ ยังนับยอด แต่ไม่รวมกัน (แยกบรรทัด) และชื่อเป็นช่องว่าง
+  function hasReportTable() {
+    return Array.from(document.querySelectorAll('table th')).some((th) => strip(th.textContent) === 'ถูกรางวัล');
+  }
+
+  function extractWinners() {
+    const types = new Map(); // ประเภท -> { named: Map(ชื่อ->ยอด), blanks: [ยอด] }
+    document.querySelectorAll('tr.billWin').forEach((tr) => {
+      const tds = tr.querySelectorAll(':scope > td');
+      if (tds.length < 9) return;
+
+      const prize = toNum(tds[6].textContent); // คอลัมน์ "ถูกรางวัล"
+      if (prize <= 0) return;
+
+      let type = strip(tds[1].textContent); // คอลัมน์ "ชนิดหวย"
+      if (!type) {
+        const col = tr.closest('.v-col');
+        const h = col && col.querySelector('h4');
+        type = h ? strip(h.textContent) : 'ไม่ระบุประเภท';
+      }
+
+      let name = '';
+      for (const td of tds) {
+        const m = strip(td.textContent).match(/ออกรางวัล\s*:\s*(.*)$/);
+        if (m) { name = strip(m[1]); break; }
+      }
+
+      if (!types.has(type)) types.set(type, { named: new Map(), blanks: [] });
+      const g = types.get(type);
+      if (!name || name === '@') {
+        g.blanks.push(prize);
+      } else {
+        if (!name.startsWith('@')) name = '@' + name;
+        g.named.set(name, (g.named.get(name) || 0) + prize);
+      }
+    });
+
+    return Array.from(types, ([type, g]) => {
+      const list = [
+        ...Array.from(g.named, ([name, total]) => ({ name, total })),
+        ...g.blanks.map((total) => ({ name: '', total })), // ชื่อว่าง
+      ];
+      return { type, list, sum: list.reduce((a, b) => a + b.total, 0) };
+    });
+  }
+
+  // บรรทัดข้อความ: ชื่อว่างจะเว้นช่องว่างไว้ให้กรอก  เช่น "@ ++475"
+  const lineOf = (w) => `${w.name || '@'} ++${fmt(w.total)}`;
+  const textOf = (g) => `${g.type}\n` + g.list.map(lineOf).join('\n');
+
+  // ---------- UI ----------
+  const css = (el, styles) => {
+    el.style.cssText = Object.entries(styles).map(([k, v]) => `${k}: ${v} !important`).join('; ');
+    return el;
+  };
+  const FONT = "'Prompt', sans-serif";
+
+  let toastTimer = null;
+  function toast(msg, kind) {
+    let t = document.getElementById('ext-win-toast');
+    if (!t) {
+      t = css(document.createElement('div'), {
+        position: 'fixed', left: '50%', bottom: '140px', transform: 'translateX(-50%)', 'z-index': '2147483647',
+        padding: '14px 24px', 'border-radius': '12px', color: '#fff', 'font-family': FONT,
+        'font-size': '14px', 'box-shadow': '0 4px 14px rgba(0,0,0,.3)', 'max-width': '90vw', 'text-align': 'center',
+      });
+      t.id = 'ext-win-toast';
+      document.body.appendChild(t);
+    }
+    t.style.setProperty('background', kind === 'warn' ? '#dc3545' : '#198754', 'important');
+    t.style.setProperty('display', 'block', 'important');
+    t.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.style.setProperty('display', 'none', 'important'), 3200);
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      // สำรอง: textarea + execCommand
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+      } catch (e2) {
+        console.error(LOG, e2);
+        return false;
+      }
+    }
+  }
+
+  let root, fab, menu, open = false;
+
+  function setOpen(v) {
+    open = v;
+    menu.style.setProperty('display', v ? 'flex' : 'none', 'important');
+    fab.textContent = v ? '✕' : 'สรุปยอด';
+    fab.style.setProperty('font-size', v ? '34px' : '18px', 'important');
+    fab.style.setProperty('background', v ? '#198754' : '#198754', 'important');
+  }
+
+  function renderMenu(groups) {
+    menu.textContent = '';
+    groups.forEach((g) => {
+      const item = css(document.createElement('button'), {
+        display: 'flex', 'align-items': 'center', 'justify-content': 'space-between', gap: '20px',
+        background: '#ffffff', color: '#212529', border: 'none', 'border-radius': '16px',
+        padding: '14px 16px 14px 22px', 'font-family': FONT, 'font-size': '20px', 'font-weight': '600',
+        cursor: 'pointer', 'box-shadow': '0 2px 10px rgba(0,0,0,.22)', 'white-space': 'nowrap',
+      });
+      item.type = 'button';
+
+      const label = document.createElement('span');
+      label.textContent = `${g.type} · ${g.list.length} คน · ${fmt(g.sum)}`;
+
+      const icon = css(document.createElement('span'), {
+        display: 'inline-flex', 'align-items': 'center', 'justify-content': 'center', width: '44px', height: '44px',
+        'border-radius': '10px', background: '#198754', color: '#fff', 'font-size': '22px',
+      });
+      icon.textContent = '📋';
+
+      item.append(label, icon);
+      item.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const ok = await copyText(textOf(g));
+        setOpen(false);
+        toast(ok ? `✅ คัดลอก "${g.type}" แล้ว (${g.list.length} รายการ)` : '❌ คัดลอกไม่สำเร็จ', ok ? 'ok' : 'warn');
+      });
+      menu.appendChild(item);
+    });
+  }
+
+  function onFabClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (open) return setOpen(false);
+
+    if (!hasReportTable()) {
+      return toast('⚠️ ไม่พบตารางรายการ กรุณาเปิดหน้ารายงานที่มีตารางก่อนกดปุ่มสรุปยอด', 'warn');
+    }
+    const groups = extractWinners();
+    if (!groups.length) {
+      return toast('⚠️ ไม่มียอดถูกรางวัลในหน้านี้', 'warn');
+    }
+    renderMenu(groups);
+    setOpen(true);
+  }
+
+  function mount() {
+    if (document.getElementById(ROOT_ID) || !document.body) return;
+    root = css(document.createElement('div'), {
+      position: 'fixed', right: '28px', bottom: '28px', 'z-index': '2147483646',
+      display: 'flex', 'flex-direction': 'column', 'align-items': 'flex-end', gap: '12px', 'font-family': FONT,
+    });
+    root.id = ROOT_ID;
+
+    menu = css(document.createElement('div'), {
+      display: 'none', 'flex-direction': 'column', 'align-items': 'flex-end', gap: '10px',
+      'max-height': '60vh', 'overflow-y': 'auto', padding: '4px',
+    });
+
+    fab = css(document.createElement('button'), {
+      width: '88px', height: '88px', 'border-radius': '50%', border: 'none', background: '#198754', color: '#fff',
+      'font-family': FONT, 'font-size': '18px', 'font-weight': '700', cursor: 'pointer', 'line-height': '1.1',
+      'box-shadow': '0 4px 14px rgba(0,0,0,.35)', padding: '0',
+    });
+    fab.type = 'button';
+    fab.textContent = 'สรุปยอด';
+    fab.addEventListener('click', onFabClick);
+
+    root.append(menu, fab);
+    document.body.appendChild(root);
+
+    // คลิกนอกเมนู / กด Esc = ปิดเมนู
+    document.addEventListener('click', (e) => { if (open && !root.contains(e.target)) setOpen(false); }, true);
+    document.addEventListener('keydown', (e) => { if (open && e.key === 'Escape') setOpen(false); });
+    console.log(LOG, 'โหลดแล้ว');
+  }
+
+  // ถ้า SPA ล้าง body ให้สร้างปุ่มกลับมา
+  new MutationObserver(() => { if (!document.getElementById(ROOT_ID)) mount(); })
+    .observe(document.documentElement, { childList: true, subtree: true });
+  mount();
 })();
