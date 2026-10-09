@@ -27,8 +27,9 @@
 
 
 ### 4️⃣ ติดตั้ง Script
-👉 [คลิกที่นี่เพื่อติดตั้ง](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js) /
-👉 [คลิกที่นี่เพื่อติดตั้ง](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/eday-closed-number.user.js)
+👉 [คลิกที่นี่เพื่อติดตั้ง HH](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js) 
+
+👉 [คลิกที่นี่เพื่อติดตั้ง Eday](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/eday-closed-number.user.js)
 
 
 กดปุ่ม **Install / ติดตั้ง**
