@@ -25,11 +25,13 @@
 
 <img width="678" height="42" alt="image" src="https://github.com/user-attachments/assets/d6e7d37b-aa65-4e08-864f-4dc7cd2c03e9" />
 
-
+smlot-copy-modal.user.js
 ### 4️⃣ ติดตั้ง Script
 👉 [คลิกที่นี่เพื่อติดตั้ง HH](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js) 
 
 👉 [คลิกที่นี่เพื่อติดตั้ง Eday](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/eday-closed-number.user.js)
+
+👉 [คลิกที่นี่เพื่อติดตั้ง Eday](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/smlot-copy-modal.user.js)
 
 
 กดปุ่ม **Install / ติดตั้ง**
