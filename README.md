@@ -31,7 +31,7 @@ smlot-copy-modal.user.js
 
 👉 [คลิกที่นี่เพื่อติดตั้ง Eday](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/eday-closed-number.user.js)
 
-👉 [คลิกที่นี่เพื่อติดตั้ง Eday](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/smlot-copy-modal.user.js)
+👉 [คลิกที่นี่เพื่อติดตั้ง SM](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/smlot-copy-modal.user.js)
 
 
 กดปุ่ม **Install / ติดตั้ง**
