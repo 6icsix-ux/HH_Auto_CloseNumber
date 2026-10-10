@@ -33,6 +33,8 @@ smlot-copy-modal.user.js
 
 👉 [คลิกที่นี่เพื่อติดตั้ง SM](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/smlot-copy-modal.user.js)
 
+👉 [คลิกที่นี่เพื่อติดตั้ง TT](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/titan-closed-number.user.js)
+
 
 กดปุ่ม **Install / ติดตั้ง**
 
