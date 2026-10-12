@@ -35,6 +35,8 @@ smlot-copy-modal.user.js
 
 👉 [คลิกที่นี่เพื่อติดตั้ง TT](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/titan-closed-number.user.js)
 
+👉 [คลิกที่นี่เพื่อติดตั้ง TT](https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/keyhuay-bill-image.user.js)
+
 
 กดปุ่ม **Install / ติดตั้ง**
 
