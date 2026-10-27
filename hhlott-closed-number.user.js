@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         HHLott - สรุปเลขปิด
 // @namespace    https://github.com/6icsix-ux/HH_Auto_CloseNumber
-// @version      1.4.6
+// @version      1.4.7
 // @description  สรุปเลขปิดแยกตามประเภทใน Modal แจ้งเตือน + ปุ่มสรุปยอดถูกรางวัล + ปุ่มคัดลอกบิล
 // @author       6icsix-ux
 // @match        https://hhlott.live/*
@@ -10,7 +10,7 @@
 // @grant        none
 // @require      https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js
 // @require      https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js
-// @require      https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hh-core.js?v=1.4.6
+// @require      https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hh-core.js?v=1.4.7
 // @updateURL    https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js
 // @downloadURL  https://raw.githubusercontent.com/6icsix-ux/HH_Auto_CloseNumber/main/hhlott-closed-number.user.js
 // ==/UserScript==
